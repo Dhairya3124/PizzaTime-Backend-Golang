@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/Dhairya3124/PizzaTime-Backend-Golang/internal/database"
 	"github.com/Dhairya3124/PizzaTime-Backend-Golang/state"
@@ -18,7 +19,17 @@ type PizzaServer struct {
 	http.Handler
 	state.State
 }
+type CreatePlayerParams struct {
+	Name sql.NullString 
+Age  sql.NullInt32
+DateCreated sql.NullTime
+Gender      sql.NullString
+TotalPizza  sql.NullInt32
+LoggedPizza sql.NullInt32
+Coins sql.NullInt32
 
+
+}
 func NewPizzaServer() *PizzaServer {
 	err := godotenv.Load()
 	if err != nil {
@@ -62,7 +73,32 @@ func (p *PizzaServer) playersHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case http.MethodPost:
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		
+		var params CreatePlayerParams
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		params.DateCreated = sql.NullTime{Time: time.Now(), Valid: true}
+		
+		playerParams := database.CreatePlayerParams{
+			Name:        params.Name,
+			Age:         params.Age,
+			DateCreated: params.DateCreated,
+			Gender:      params.Gender,
+			TotalPizza:  params.TotalPizza,
+			LoggedPizza: params.LoggedPizza,
+			Coins:       params.Coins,
+		}
+		player, err := p.State.DB.CreatePlayer(context.Background(), playerParams)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		json.NewEncoder(w).Encode(player)
+		
 	}
 
 }
