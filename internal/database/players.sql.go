@@ -7,7 +7,7 @@ package database
 
 import (
 	"context"
-	"database/sql"
+	"time"
 )
 
 const createPlayer = `-- name: CreatePlayer :one
@@ -15,13 +15,13 @@ INSERT INTO player(name,gender,age,total_pizza,logged_pizza,coins,date_created) 
 `
 
 type CreatePlayerParams struct {
-	Name        sql.NullString
-	Gender      sql.NullString
-	Age         sql.NullInt32
-	TotalPizza  sql.NullInt32
-	LoggedPizza sql.NullInt32
-	Coins       sql.NullInt32
-	DateCreated sql.NullTime
+	Name        string
+	Gender      string
+	Age         int32
+	TotalPizza  int32
+	LoggedPizza int32
+	Coins       int32
+	DateCreated time.Time
 }
 
 func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Player, error) {

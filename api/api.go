@@ -19,17 +19,7 @@ type PizzaServer struct {
 	http.Handler
 	state.State
 }
-type CreatePlayerParams struct {
-	Name sql.NullString 
-Age  sql.NullInt32
-DateCreated sql.NullTime
-Gender      sql.NullString
-TotalPizza  sql.NullInt32
-LoggedPizza sql.NullInt32
-Coins sql.NullInt32
 
-
-}
 func NewPizzaServer() *PizzaServer {
 	err := godotenv.Load()
 	if err != nil {
@@ -49,9 +39,11 @@ func NewPizzaServer() *PizzaServer {
 	if err != nil {
 		log.Fatal("Failed to connect to the database:", err)
 	}
-	defer db.Close()
+	
 	databaseQueries := database.New(db)
 	p.State.DB = databaseQueries
+	// Todo: Close the database after the request 
+	// defer db.Close() 
 
 	return p
 }
@@ -76,12 +68,12 @@ func (p *PizzaServer) playersHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		
-		var params CreatePlayerParams
+		var params database.CreatePlayerParams
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		params.DateCreated = sql.NullTime{Time: time.Now(), Valid: true}
+		params.DateCreated = time.Now()
 		
 		playerParams := database.CreatePlayerParams{
 			Name:        params.Name,
