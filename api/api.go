@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/Dhairya3124/PizzaTime-Backend-Golang/internal/database"
@@ -28,6 +29,7 @@ func NewPizzaServer() *PizzaServer {
 	p := new(PizzaServer)
 	router := http.NewServeMux()
 	router.Handle("/api/v1/player", http.HandlerFunc(p.playersHandler))
+	router.Handle("/api/v1/player/{id}", http.HandlerFunc(p.playersHandlerById))
 	p.Handler = router
 	p.State = state.New()
 
@@ -39,11 +41,11 @@ func NewPizzaServer() *PizzaServer {
 	if err != nil {
 		log.Fatal("Failed to connect to the database:", err)
 	}
-	
+
 	databaseQueries := database.New(db)
 	p.State.DB = databaseQueries
-	// Todo: Close the database after the request 
-	// defer db.Close() 
+	// Todo: Close the database after the request
+	// defer db.Close()
 
 	return p
 }
@@ -67,14 +69,14 @@ func (p *PizzaServer) playersHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		
+
 		var params database.CreatePlayerParams
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		params.DateCreated = time.Now()
-		
+
 		playerParams := database.CreatePlayerParams{
 			Name:        params.Name,
 			Age:         params.Age,
@@ -90,7 +92,27 @@ func (p *PizzaServer) playersHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		json.NewEncoder(w).Encode(player)
-		
+
+	}
+
+}
+func (p *PizzaServer) playersHandlerById(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		idStr := r.PathValue("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		player, err := p.State.DB.GetPlayer(context.Background(), int32(id))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		} else {
+			json.NewEncoder(w).Encode(player)
+
+		}
 	}
 
 }
