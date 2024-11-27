@@ -4,3 +4,5 @@ INSERT INTO player(name,gender,age,total_pizza,logged_pizza,coins,date_created) 
 SELECT * FROM player;
 -- name: GetPlayer :one
 SELECT * FROM player WHERE id = $1;
+-- name: DeletePlayer :exec
+DELETE FROM player WHERE id = $1;

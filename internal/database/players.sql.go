@@ -48,6 +48,15 @@ func (q *Queries) CreatePlayer(ctx context.Context, arg CreatePlayerParams) (Pla
 	return i, err
 }
 
+const deletePlayer = `-- name: DeletePlayer :exec
+DELETE FROM player WHERE id = $1
+`
+
+func (q *Queries) DeletePlayer(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deletePlayer, id)
+	return err
+}
+
 const getPlayer = `-- name: GetPlayer :one
 SELECT id, name, gender, age, total_pizza, logged_pizza, coins, date_created FROM player WHERE id = $1
 `
