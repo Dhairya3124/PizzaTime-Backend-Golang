@@ -113,6 +113,18 @@ func (p *PizzaServer) playersHandlerById(w http.ResponseWriter, r *http.Request)
 			json.NewEncoder(w).Encode(player)
 
 		}
+	case http.MethodDelete:
+		idStr := r.PathValue("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		err = p.State.DB.DeletePlayer(context.Background(), int32(id))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 
 }
