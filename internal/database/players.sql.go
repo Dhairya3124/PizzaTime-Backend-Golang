@@ -112,3 +112,44 @@ func (q *Queries) GetPlayers(ctx context.Context) ([]Player, error) {
 	}
 	return items, nil
 }
+
+const updatePlayer = `-- name: UpdatePlayer :one
+UPDATE player
+SET name = $1,gender = $2,age = $3,total_pizza = $4,logged_pizza = $5,coins = $6,date_updated = CURRENT_TIMESTAMP
+WHERE id = $7
+RETURNING id, name, gender, age, total_pizza, logged_pizza, coins, date_created
+`
+
+type UpdatePlayerParams struct {
+	Name        string
+	Gender      string
+	Age         int32
+	TotalPizza  int32
+	LoggedPizza int32
+	Coins       int32
+	ID          int32
+}
+
+func (q *Queries) UpdatePlayer(ctx context.Context, arg UpdatePlayerParams) (Player, error) {
+	row := q.db.QueryRowContext(ctx, updatePlayer,
+		arg.Name,
+		arg.Gender,
+		arg.Age,
+		arg.TotalPizza,
+		arg.LoggedPizza,
+		arg.Coins,
+		arg.ID,
+	)
+	var i Player
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Gender,
+		&i.Age,
+		&i.TotalPizza,
+		&i.LoggedPizza,
+		&i.Coins,
+		&i.DateCreated,
+	)
+	return i, err
+}

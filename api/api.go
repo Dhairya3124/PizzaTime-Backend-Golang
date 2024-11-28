@@ -113,6 +113,28 @@ func (p *PizzaServer) playersHandlerById(w http.ResponseWriter, r *http.Request)
 			json.NewEncoder(w).Encode(player)
 
 		}
+	case http.MethodPost:
+		idStr := r.PathValue("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		var params database.UpdatePlayerParams
+
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		params.ID = int32(id)
+
+		player, err := p.State.DB.UpdatePlayer(context.Background(), params)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		} else {
+			json.NewEncoder(w).Encode(player)
+		}
+
 	case http.MethodDelete:
 		idStr := r.PathValue("id")
 		id, err := strconv.Atoi(idStr)
