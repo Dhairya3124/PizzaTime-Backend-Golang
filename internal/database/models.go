@@ -5,8 +5,16 @@
 package database
 
 import (
+	"database/sql"
 	"time"
 )
+
+type Pizza struct {
+	ID          int32
+	PlayerID    sql.NullInt32
+	LoggedPizza int32
+	DateCreated time.Time
+}
 
 type Player struct {
 	ID          int32
