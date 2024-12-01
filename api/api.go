@@ -30,6 +30,8 @@ func NewPizzaServer() *PizzaServer {
 	router := http.NewServeMux()
 	router.Handle("/api/v1/player", http.HandlerFunc(p.playersHandler))
 	router.Handle("/api/v1/player/{id}", http.HandlerFunc(p.playersHandlerById))
+	router.Handle("/api/v1/pizza/{id}",http.HandlerFunc(p.pizzaHandler))
+
 	p.Handler = router
 	p.State = state.New()
 
@@ -149,4 +151,6 @@ func (p *PizzaServer) playersHandlerById(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
+}
+func (p *PizzaServer) pizzaHandler(w http.ResponseWriter, r *http.Request) {
 }
